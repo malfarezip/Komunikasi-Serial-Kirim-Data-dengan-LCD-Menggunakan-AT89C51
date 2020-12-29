@@ -1,0 +1,280 @@
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 1
+
+
+
+
+
+       MCS-51 Family Macro Assembler   A S E M - 5 1   V 1.3
+       =====================================================
+
+
+
+	Source File:	D:\Tugas & File\UIN Bandung\Kuliah\ELEKTRO Sem. 5\Prak. Sistem Mikroprocessor\UTS\Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51\Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51.asm
+	Object File:	D:\Tugas & File\UIN Bandung\Kuliah\ELEKTRO Sem. 5\Prak. Sistem Mikroprocessor\UTS\Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51\Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51.hex
+	List File:	D:\Tugas & File\UIN Bandung\Kuliah\ELEKTRO Sem. 5\Prak. Sistem Mikroprocessor\UTS\Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51\Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51.lst
+
+
+
+ Line  I  Addr  Code            Source
+
+    1:				;Komunikasi Serial Kirim Data dengan LCD menggunakan AT89C51
+    2:	  0000			start:
+    3:
+    4:				;=======INISIALISASI HURUF========
+    5:		N      0052	R equ 01010010b
+    6:		N      0045	E equ 01000101b
+    7:		N      005A	Z equ 01011010b
+    8:		N      0049	I equ 01001001b
+    9:
+   10:				;=======INISIALISASI LCD============
+   11:	  0000	78 38		mov R0,#00111000b ;function set
+   12:	  0002	11 6D		acall instlcd
+   13:	  0004	78 06		mov R0,#00000110b ;entry mode
+   14:	  0006	11 6D		acall instlcd
+   15:	  0008	78 0C		mov R0,#00001100b ;no cursor, blink off
+   16:	  000A	11 6D		acall instlcd
+   17:	  000C	78 01		mov R0,#00000001b ;clear display
+   18:	  000E	11 6D		acall instlcd
+   19:
+   20:				;======INISIALISASI KOMUNIKASI SERIAL======
+   21:		N      00E8	baud EQU 0E8h ; 1200 bps
+   22:	  0010	75 98 50	MOV SCON,#01010000b
+   23:	  0013	75 89 20	MOV TMOD,#00100000b
+   24:	  0016	75 88 40	MOV TCON,#01000000b
+   25:	  0019	75 8D E8	MOV TH1 ,#baud
+   26:
+   27:				;=======TAMPILAN HURUF "REZI"============
+   28:	  001C	78 80		mov R0,#80h
+   29:	  001E	11 6D		acall instlcd
+   30:	  0020	78 52		mov R0,#R
+   31:	  0022	11 80		acall datalcd
+   32:	  0024	78 81		mov R0,#81h
+   33:	  0026	11 6D		acall instlcd
+   34:	  0028	78 45		mov R0,#E
+   35:	  002A	11 80		acall datalcd
+   36:	  002C	78 82		mov R0,#82h
+   37:	  002E	11 6D		acall instlcd
+   38:	  0030	78 5A		mov R0,#Z
+   39:	  0032	11 80		acall datalcd
+   40:	  0034	78 83		mov R0,#83h
+   41:	  0036	11 6D		acall instlcd
+   42:	  0038	78 49		mov R0,#I
+   43:	  003A	11 80		acall datalcd
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 2
+
+
+
+ Line  I  Addr  Code            Source
+
+   44:
+   45:				;====TAMPILKAN ANGKA "3 DIGIT" SECARA MANUAL===
+   46:	  003C	7A 00		mov R2,#00
+   47:	  003E			loop2:
+   48:	  003E	EA		mov a,R2
+   49:				;====Kirim data ke serial port====
+   50:				;JNB TI,$ ;Tunggu data sebelumnya selesai
+   51:	  003F	F5 99		MOV SBUF,a ;Kirim data baru
+   52:				;CLR TI ;Sinyal ada pengiriman baru
+   53:
+   54:				;====Serial End=====
+   55:	  0041	75 F0 64	mov b,#100
+   56:	  0044	84		div ab
+   57:	  0045	78 86		mov R0,#086h
+   58:	  0047	11 6D		acall instlcd
+   59:	  0049	24 30		add a,#30h
+   60:	  004B	F8		mov R0,a
+   61:	  004C	11 80		acall datalcd
+   62:
+   63:	  004E	E5 F0		mov a,b
+   64:	  0050	75 F0 0A	mov b,#10
+   65:	  0053	84		div ab
+   66:	  0054	78 87		mov R0,#087h
+   67:	  0056	11 6D		acall instlcd
+   68:	  0058	24 30		add a,#30h
+   69:	  005A	F8		mov R0,a
+   70:	  005B	11 80		acall datalcd
+   71:
+   72:	  005D	E5 F0		mov a,b
+   73:	  005F	78 88		mov R0,#088h
+   74:	  0061	11 6D		acall instlcd
+   75:	  0063	24 30		add a,#30h
+   76:	  0065	F8		mov R0,a
+   77:	  0066	11 80		acall datalcd
+   78:	  0068	11 9C		acall delay
+   79:	  006A	0A		inc R2
+   80:	  006B	80 D1		sjmp loop2
+   81:
+   82:				;=======PROSEDUR IRLCD===============
+   83:	  006D	D2 B3		instlcd:setb p3.3
+   84:	  006F	C2 B2		clr p3.2 ; RS=0 E=1
+   85:	  0071	11 95		acall delaylcd
+   86:
+   87:	  0073	88 90		mov P1,R0 ;send instruksi
+   88:	  0075	11 95		acall delaylcd
+   89:
+   90:	  0077	C2 B3		clr p3.3 ; RS=0 E=0
+   91:	  0079	11 95		acall delaylcd
+   92:
+   93:	  007B	D2 B2		setb p3.2 ; RS=0 E=1
+   94:	  007D	11 95		acall delaylcd
+   95:	  007F	22		ret
+   96:
+   97:				;=======PROCEDURE DTLCD===============
+   98:	  0080	D2 B2		datalcd:setb p3.2
+   99:	  0082	D2 B3		setb p3.3 ; RS=1 E=1
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 3
+
+
+
+ Line  I  Addr  Code            Source
+
+  100:	  0084	11 95		acall delaylcd
+  101:
+  102:	  0086	88 90		mov P1,R0 ; send data
+  103:	  0088	11 95		acall delaylcd
+  104:
+  105:	  008A	C2 B3		clr p3.3 ; RS=1 E=0
+  106:	  008C	12 00 95	call delaylcd
+  107:
+  108:	  008F	D2 B3		setb p3.3 ; RS=1 E=1
+  109:	  0091	12 00 95	call delaylcd
+  110:	  0094	22		ret
+  111:
+  112:				;=======PROSEDUR DELAYLCD===============
+  113:	  0095	79 00		delaylcd:mov R1,#00
+  114:	  0097	09		loop: inc R1
+  115:	  0098	B9 99 FC	cjne R1,#99h,loop
+  116:	  009B	22		ret
+  117:
+  118:	  009C	7F 00		delay: mov r7,#00h
+  119:	  009E	7E 00		ulang2: mov r6,#00h
+  120:	  00A0	7D 00		ulang1: mov r5,#00h
+  121:	  00A2	0D		ulang: inc r5
+  122:	  00A3	BD 40 FC	cjne r5,#40h,ulang
+  123:	  00A6	0E		inc r6
+  124:	  00A7	BE 40 F6	cjne r6,#40h,ulang1
+  125:	  00AA	0F		inc r7
+  126:	  00AB	BF 40 F0	cjne r7,#40h,ulang2
+  127:	  00AE	22		ret
+  128:
+  129:				end
+
+
+
+
+
+                     register banks used:  ---
+
+                     no errors
+
+
+
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 4
+
+
+
+
+
+	       L I S T   O F   S Y M B O L S
+	       =============================
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+??ASEM_51			  NUMBER    8051
+??VERSION			  NUMBER    0130
+AC				  BIT	      D6
+ACC				  DATA	      E0
+B				  DATA	      F0
+BAUD				  NUMBER    00E8	  21
+CY				  BIT	      D7
+DATALCD				  CODE	    0080	  98
+DELAY				  CODE	    009C	 118
+DELAYLCD			  CODE	    0095	 113
+DPH				  DATA	      83
+DPL				  DATA	      82
+E				  NUMBER    0045	   6
+EA				  BIT	      AF
+ES				  BIT	      AC
+ET0				  BIT	      A9
+ET1				  BIT	      AB
+EX0				  BIT	      A8
+EX1				  BIT	      AA
+EXTI0				  CODE	    0003
+EXTI1				  CODE	    0013
+F0				  BIT	      D5
+I				  NUMBER    0049	   8
+IE				  DATA	      A8
+IE0				  BIT	      89
+IE1				  BIT	      8B
+INSTLCD				  CODE	    006D	  83
+INT0				  BIT	      B2
+INT1				  BIT	      B3
+IP				  DATA	      B8
+IT0				  BIT	      88
+IT1				  BIT	      8A
+LOOP				  CODE	    0097	 114
+LOOP2				  CODE	    003E	  47
+OV				  BIT	      D2
+P				  BIT	      D0
+P0				  DATA	      80
+P1				  DATA	      90
+P2				  DATA	      A0
+P3				  DATA	      B0
+PCON				  DATA	      87
+PS				  BIT	      BC
+PSW				  DATA	      D0
+PT0				  BIT	      B9
+PT1				  BIT	      BB
+PX0				  BIT	      B8
+PX1				  BIT	      BA
+R				  NUMBER    0052	   5
+RB8				  BIT	      9A
+RD				  BIT	      B7
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 5
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+REN				  BIT	      9C
+RESET				  CODE	    0000
+RI				  BIT	      98
+RS0				  BIT	      D3
+RS1				  BIT	      D4
+RXD				  BIT	      B0
+SBUF				  DATA	      99
+SCON				  DATA	      98
+SINT				  CODE	    0023
+SM0				  BIT	      9F
+SM1				  BIT	      9E
+SM2				  BIT	      9D
+SP				  DATA	      81
+START				  CODE	    0000	   2
+T0				  BIT	      B4
+T1				  BIT	      B5
+TB8				  BIT	      9B
+TCON				  DATA	      88
+TF0				  BIT	      8D
+TF1				  BIT	      8F
+TH0				  DATA	      8C
+TH1				  DATA	      8D
+TI				  BIT	      99
+TIMER0				  CODE	    000B
+TIMER1				  CODE	    001B
+TL0				  DATA	      8A
+TL1				  DATA	      8B
+TMOD				  DATA	      89
+TR0				  BIT	      8C
+TR1				  BIT	      8E
+TXD				  BIT	      B1
+ULANG				  CODE	    00A2	 121
+ULANG1				  CODE	    00A0	 120
+ULANG2				  CODE	    009E	 119
+WR				  BIT	      B6
+Z				  NUMBER    005A	   7
